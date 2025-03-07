@@ -1,7 +1,7 @@
 <h1 align="center">CTA Example Common</h1>
 
 <p align="center">
-	An example of create-typescript-app's Common preset.
+	An example of <a href="https://github.com/JoshuaKGoldberg/create-typescript-app">create-typescript-app</a>'s Common preset.
 	✨
 </p>
 
