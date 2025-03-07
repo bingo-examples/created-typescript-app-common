@@ -1,51 +1,58 @@
+import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import eslint from "@eslint/js";
 import vitest from "@vitest/eslint-plugin";
+import jsdoc from "eslint-plugin-jsdoc";
+import jsonc from "eslint-plugin-jsonc";
+import markdown from "eslint-plugin-markdown";
 import n from "eslint-plugin-n";
+import packageJson from "eslint-plugin-package-json/configs/recommended";
+import perfectionist from "eslint-plugin-perfectionist";
+import * as regexp from "eslint-plugin-regexp";
+import yml from "eslint-plugin-yml";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
 	{
-		ignores: [
-			"coverage*",
-			"lib",
-			"node_modules",
-			"pnpm-lock.yaml",
-			"**/*.snap",
-		],
+		ignores: ["**/*.snap", "coverage", "lib", "node_modules", "pnpm-lock.yaml"],
 	},
-	{
-		linterOptions: {
-			reportUnusedDisableDirectives: "error",
-		},
-	},
+	{ linterOptions: { reportUnusedDisableDirectives: "error" } },
 	eslint.configs.recommended,
+	comments.recommended,
+	jsdoc.configs["flat/contents-typescript-error"],
+	jsdoc.configs["flat/logical-typescript-error"],
+	jsdoc.configs["flat/stylistic-typescript-error"],
+	jsonc.configs["flat/recommended-with-json"],
+	markdown.configs.recommended,
 	n.configs["flat/recommended"],
-	...tseslint.config({
-		extends: tseslint.configs.recommendedTypeChecked,
+	packageJson,
+	perfectionist.configs["recommended-natural"],
+	regexp.configs["flat/recommended"],
+	{
+		extends: [
+			tseslint.configs.strictTypeChecked,
+			tseslint.configs.stylisticTypeChecked,
+		],
 		files: ["**/*.js", "**/*.ts"],
 		languageOptions: {
 			parserOptions: {
-				projectService: {
-					allowDefaultProject: ["*.*s", "eslint.config.js"],
-					defaultProject: "./tsconfig.json",
-				},
+				projectService: { allowDefaultProject: ["*.config.*s"] },
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 		rules: {
-			// These on-by-default rules don't work well for this repo and we like them off.
-			"no-constant-condition": "off",
-
-			// These on-by-default rules work well for this repo if configured
-			"@typescript-eslint/no-unused-vars": ["error", { caughtErrors: "all" }],
+			// Stylistic concerns that don't interfere with Prettier
+			"logical-assignment-operators": [
+				"error",
+				"always",
+				{ enforceForIfStatements: true },
+			],
+			"no-useless-rename": "error",
+			"object-shorthand": "error",
+			"operator-assignment": "error",
 		},
-	}),
-	{
-		files: ["*.jsonc"],
-		rules: {
-			"jsonc/comma-dangle": "off",
-			"jsonc/no-comments": "off",
-			"jsonc/sort-keys": "error",
+		settings: {
+			perfectionist: { partitionByComment: true, type: "natural" },
+			vitest: { typecheck: true },
 		},
 	},
 	{
@@ -54,22 +61,28 @@ export default tseslint.config(
 		rules: {
 			"n/no-missing-import": [
 				"error",
-				{ allowModules: ["cta-example-common"] },
+				{ allowModules: ["created-typescript-app-common"] },
 			],
 		},
 	},
 	{
+		extends: [vitest.configs.recommended],
 		files: ["**/*.test.*"],
-		languageOptions: {
-			globals: vitest.environments.env.globals,
-		},
-		plugins: { vitest },
+		rules: { "@typescript-eslint/no-unsafe-assignment": "off" },
+	},
+	{
+		extends: [yml.configs["flat/recommended"], yml.configs["flat/prettier"]],
+		files: ["**/*.{yml,yaml}"],
 		rules: {
-			...vitest.configs.recommended.rules,
-
-			// These on-by-default rules aren't useful in test files.
-			"@typescript-eslint/no-unsafe-assignment": "off",
-			"@typescript-eslint/no-unsafe-call": "off",
+			"yml/file-extension": ["error", { extension: "yml" }],
+			"yml/sort-keys": [
+				"error",
+				{ order: { type: "asc" }, pathPattern: "^.*$" },
+			],
+			"yml/sort-sequence-values": [
+				"error",
+				{ order: { type: "asc" }, pathPattern: "^.*$" },
+			],
 		},
 	},
 );
